@@ -14,7 +14,7 @@ Analyse complète des blessures de joueurs de football avec intégration de donn
 - **API Football** : matchs en temps réel, calendrier
 - **API Météo** : conditions climatiques lors des matchs
 - **Kaggle Dataset** : statistiques de performance complémentaires
-
+  
 ## 🏗️ Architecture
 
 ```
