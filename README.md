@@ -8,7 +8,7 @@ Analyse complète des blessures de joueurs de football avec intégration de donn
 2. **Optimisation des périodes de récupération** 
 3. **Analyse des facteurs de risque** (âge, position, météo, charge de travail)
 4. **Tableau de bord en temps réel** pour les équipes médicales
- 
+
 ## 📊 Sources de Données
 - **Données historiques** : player_injuries.csv, player_profiles.csv
 - **API Football** : matchs en temps réel, calendrier
