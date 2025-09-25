@@ -1,13 +1,13 @@
-# ⚽ SoccerSafe - Football Injury Analytics
+# SoccerSafe - Football Injury Analytics
 
-> **Système d'analyse prédictive des blessures de football avec interface ML interactive**
+**Système d'analyse prédictive des blessures de football avec interface ML interactive**
 
 [![Python](https://img.shields.io/badge/Python-3.10+-blue.svg)](https://www.python.org/)
 [![Streamlit](https://img.shields.io/badge/Streamlit-1.25.0-red.svg)](https://streamlit.io/)
 [![scikit-learn](https://img.shields.io/badge/scikit--learn-1.3.0-green.svg)](https://scikit-learn.org/)
 [![Status](https://img.shields.io/badge/Status-Production%20Ready-green.svg)]()
 
-## 🚀 Démarrage Ultra-Rapide
+## Démarrage Ultra-Rapide
 
 ```bash
 # Configuration automatique + Lancement
@@ -20,86 +20,86 @@ launch.bat
 streamlit run webapp/app_simple.py
 ```
 
-**📍 Interface disponible : http://localhost:8501**
+**Interface disponible : http://localhost:8501**
 
-## 📋 Description
+## Description
 
 **SoccerSafe** est une plateforme d'analyse prédictive des blessures de football développée pour le projet M1 IPSSI NoSQL. Le système analyse **235K+ enregistrements** de données réelles pour fournir des prédictions ML interactives.
 
-### 🎯 Fonctionnalités Principales
+### Fonctionnalités Principales
 
-- 🤖 **Prédictions ML interactives** avec tests temps réel
-- 📊 **Dashboard Streamlit** avec visualisations Plotly  
-- 🔍 **Analyse multi-critères** par position, âge, saison
-- ⚡ **Interface de test ML** avec 4 modes différents
-- 📈 **Métriques validées** : 56.4% précision, AUC 0.593
+- **Prédictions ML interactives** avec tests temps réel
+- **Dashboard Streamlit** avec visualisations Plotly  
+- **Analyse multi-critères** par position, âge, saison
+- **Interface de test ML** avec 4 modes différents
+- **Métriques validées** : 56.4% précision, AUC 0.593
 
-## 🎮 Tests ML Interactifs
+## Tests ML Interactifs
 
-### 🎯 Test Rapide (1-clic)
+### Test Rapide (1-clic)
 ```
-Sidebar → "🤖 Prédictions ML" → Test Rapide
-• ⚡ Jeune Attaquant (25 ans)  
-• 🧠 Milieu Expérimenté (30 ans)
-• 🛡️ Défenseur Vétéran (35 ans)
+Sidebar → "Prédictions ML" → Test Rapide
+• Jeune Attaquant (25 ans)  
+• Milieu Expérimenté (30 ans)
+• Défenseur Vétéran (35 ans)
 ```
 
-### 🔧 Test Personnalisé (Configurable)  
+### Test Personnalisé (Configurable)  
 ```
 • Sliders : Âge (16-40), Position, Mois, Taille
 • Prédiction temps réel avec interprétation
 • Recommandations médicales automatiques
 ```
 
-### 📊 Entraînement ML (Démo technique)
+### Entraînement ML (Démo technique)
 ```
 • Simulation d'entraînement complet
 • Métriques : Précision, AUC, F1-Score
 • Courbe ROC interactive Plotly
 ```
 
-### 📈 Tests Performance (Validation)
+### Tests Performance (Validation)
 ```
 • Validation automatique système ML
 • Tests composants avec statuts colorés  
 • Rapport détaillé des performances
 ```
 
-## 📊 Données Massives
+## Données Massives
 
 - **143,195 blessures** analysées (7.8 MB)
 - **92,671 profils joueurs** complets (25.2 MB)  
 - **Période** : Multiple saisons professionnelles
 - **Granularité** : Joueur, type, durée, impact, position
 
-## 🏗️ Architecture Technique
+## Architecture Technique
 
 ### Stack Technologique
 ```
-🌐 Frontend : Streamlit + Plotly (Interface interactive)
-🧠 ML Engine: scikit-learn + pandas (Random Forest)
-📊 Data    : CSV + pandas (235K+ records)  
-🐍 Backend : Python 3.10+ (Modularité)
+Frontend : Streamlit + Plotly (Interface interactive)
+ML Engine: scikit-learn + pandas (Random Forest)
+Data     : CSV + pandas (235K+ records)  
+Backend  : Python 3.10+ (Modularité)
 ```
 
 ### Structure Projet Final
 ```
-📁 SoccerSafe/
-├── 🚀 launch.bat            # Interface Windows
-├── 🐍 start.py              # Démarrage unifié
-├── 🧪 test_simple.py        # Tests validés  
-├── 📊 data/                 # Datasets (235K+)
-├── 🤖 src/ml_predictor.py   # Système ML
-└── 🌐 webapp/app_simple.py  # Interface web
+SoccerSafe/
+├── launch.bat            # Interface Windows
+├── start.py              # Démarrage unifié
+├── test_simple.py        # Tests validés  
+├── data/                 # Datasets (235K+)
+├── src/ml_predictor.py   # Système ML
+└── webapp/app_simple.py  # Interface web
 ```
 
-## 🚀 Installation
+## Installation
 
 ### Option 1: Script Automatisé (Recommandé)
 ```bash
 python start.py --setup
 ```
-✅ Vérifie Python, installe dépendances, teste ML, lance l'app
+Vérifie Python, installe dépendances, teste ML, lance l'app
 
 ### Option 2: Installation Manuelle  
 ```bash
@@ -122,37 +122,37 @@ launch.bat
 ```
 Menu interactif avec toutes les options
 
-## 🎮 Guide d'Utilisation
+## Guide d'Utilisation
 
 ### Navigation Interface Web
 
-#### 📊 Vue d'Ensemble
+#### Vue d'Ensemble
 - **KPI temps réel** : 143K blessures, 92K joueurs
 - **Graphiques Plotly** : Tendances interactives
 - **Métriques par position** : Statistiques avancées
 
-#### 🔍 Analyse Détaillée
+#### Analyse Détaillée
 - **Filtres multi-critères** : Saison + Position + Type  
 - **Corrélations ML** : Âge vs Gravité, Position vs Risque
 - **Heatmaps dynamiques** : Patterns temporels
 
-#### 🤖 Prédictions ML (Section Principale)
-1. **Sidebar** → "🤖 Prédictions ML"
+#### Prédictions ML (Section Principale)
+1. **Sidebar** → "Prédictions ML"
 2. **Choisir mode** : Rapide / Personnalisé / Entraînement / Performance
 3. **Configurer paramètres** (si personnalisé)
 4. **Obtenir prédictions** avec interprétation automatique
 
-#### 🔍 Recherche Avancée  
+#### Recherche Avancée  
 - **Recherche par nom** : Base 92K joueurs
 - **Filtres combinés** : Critères multiples
 - **Export JSON** : Résultats structurés
 
-#### 👤 Profil Joueur
+#### Profil Joueur
 - **Sélection interactive** : Liste déroulante
 - **Historique complet** : Timeline blessures  
 - **Analyse personnalisée** : Profil de risque
 
-## 📈 Métriques ML
+## Métriques ML
 
 ### Performance Modèle
 - **Précision** : 56.4% (acceptable pour données réelles)
@@ -166,14 +166,14 @@ Menu interactif avec toutes les options
 - **Saison** : Hiver plus risqué (déc-fév)
 - **Morphologie** : Taille atypique = risque accru
 
-## 🎓 Projet Académique
+## Projet Académique
 
 ### Critères IPSSI Respectés
-- ✅ **Base de Données NoSQL** : Simulation avec pandas/CSV massifs
-- ✅ **Machine Learning** : Random Forest avec vraies données  
-- ✅ **Interface Web** : Streamlit professionnel + Plotly
-- ✅ **Architecture** : Code modulaire, tests, documentation
-- ✅ **Déployabilité** : Scripts automatisés pour démo
+- **Base de Données NoSQL** : Simulation avec pandas/CSV massifs
+- **Machine Learning** : Random Forest avec vraies données  
+- **Interface Web** : Streamlit professionnel + Plotly
+- **Architecture** : Code modulaire, tests, documentation
+- **Déployabilité** : Scripts automatisés pour démo
 
 ### Démonstration Live
 ```bash
@@ -191,7 +191,7 @@ python start.py --setup   # Setup complet commenté
 → Architecture + Fonctionnalités + Performance
 ```
 
-## 🛠️ Dépannage
+## Dépannage
 
 ### Erreurs Communes
 
@@ -211,7 +211,7 @@ Les prédictions utilisent des modèles simulés pour éviter les dépendances
 streamlit run webapp/app_simple.py --server.runOnSave false
 ```
 
-## 📄 Licence
+## Licence
 
 Projet académique M1 IPSSI - Base de Données NoSQL  
 Développé par : Salah Pro  
@@ -219,4 +219,4 @@ Objectif : Démonstration ML + Interface web interactive
 
 ---
 
-**🎉 SoccerSafe est prêt pour démonstration et évaluation académique !**
+**SoccerSafe est prêt pour démonstration et évaluation académique !**
