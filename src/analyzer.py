@@ -224,49 +224,124 @@ class InjuryAnalyzer:
     
     def predict_injury_risk(self):
         """Modèle de prédiction du risque de blessure"""
-        # Préparer les données pour le ML
-        ml_df = self.merged_df.dropna(subset=['age', 'height', 'main_position']).copy()
-        
-        # Encoder les variables catégorielles
-        le_position = LabelEncoder()
-        ml_df['position_encoded'] = le_position.fit_transform(ml_df['main_position'])
-        
-        le_category = LabelEncoder()
-        ml_df['category_encoded'] = le_category.fit_transform(ml_df['injury_category'])
-        
-        # Variables prédictives
-        features = ['age', 'height', 'position_encoded', 'injury_month']
-        X = ml_df[features]
-        
-        # Variable cible (blessure grave ou non)
-        y = (ml_df['days_missed'] > 21).astype(int)  # 1 si blessure grave (>21 jours)
-        
-        # Division train/test
-        X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.3, random_state=42)
-        
-        # Entraînement du modèle
-        model = RandomForestClassifier(n_estimators=100, random_state=42)
-        model.fit(X_train, y_train)
-        
-        # Prédictions
-        y_pred = model.predict(X_test)
-        
-        # Importance des features
-        feature_importance = pd.DataFrame({
-            'feature': features,
-            'importance': model.feature_importances_
-        }).sort_values('importance', ascending=False)
-        
-        # Rapport de classification
-        report = classification_report(y_test, y_pred, output_dict=True)
-        
-        return {
-            'model': model,
-            'feature_importance': feature_importance,
-            'classification_report': report,
-            'accuracy': model.score(X_test, y_test),
-            'label_encoders': {'position': le_position, 'category': le_category}
-        }
+        try:
+            # Vérifier les colonnes disponibles
+            required_cols = ['age', 'main_position']
+            available_cols = []
+            
+            for col in required_cols:
+                if col in self.merged_df.columns:
+                    available_cols.append(col)
+            
+            # Utiliser height ou une valeur par défaut
+            height_col = None
+            for col in ['height', 'height_cm']:
+                if col in self.merged_df.columns:
+                    height_col = col
+                    break
+            
+            if height_col:
+                available_cols.append(height_col)
+            
+            print(f"📊 Colonnes disponibles pour ML: {available_cols}")
+            
+            # Préparer les données pour le ML
+            ml_df = self.merged_df.dropna(subset=available_cols).copy()
+            
+            if len(ml_df) < 10:
+                return {
+                    'error': 'Données insuffisantes pour l\'entraînement ML',
+                    'available_data': len(ml_df)
+                }
+            
+            # Encoder les variables catégorielles
+            le_position = LabelEncoder()
+            ml_df['position_encoded'] = le_position.fit_transform(ml_df['main_position'])
+            
+            # Variables prédictives (adaptées aux colonnes disponibles)
+            features = ['age', 'position_encoded', 'injury_month']
+            
+            if height_col:
+                ml_df['height_normalized'] = ml_df[height_col].fillna(ml_df[height_col].mean())
+                features.append('height_normalized')
+            
+            # Vérifier que toutes les features existent
+            X = ml_df[features].dropna()
+            
+            # Variable cible (blessure grave ou non)
+            y = (ml_df.loc[X.index, 'days_missed'] > 21).astype(int)
+            
+            print(f"🎯 Données d'entraînement: {len(X)} échantillons, {len(features)} features")
+            print(f"📈 Répartition cible: {y.value_counts().to_dict()}")
+            
+            if len(X) < 10:
+                return {
+                    'error': 'Données insuffisantes après nettoyage',
+                    'available_data': len(X)
+                }
+            
+            # Division train/test
+            X_train, X_test, y_train, y_test = train_test_split(
+                X, y, test_size=0.3, random_state=42, stratify=y if len(y.unique()) > 1 else None
+            )
+            
+            # Entraînement du modèle
+            model = RandomForestClassifier(
+                n_estimators=100, 
+                random_state=42,
+                max_depth=10,
+                min_samples_split=5
+            )
+            model.fit(X_train, y_train)
+            
+            # Prédictions
+            y_pred = model.predict(X_test)
+            y_pred_proba = model.predict_proba(X_test)
+            
+            # Importance des features
+            feature_importance = pd.DataFrame({
+                'feature': features,
+                'importance': model.feature_importances_
+            }).sort_values('importance', ascending=False)
+            
+            # Métriques de performance
+            accuracy = model.score(X_test, y_test)
+            
+            try:
+                report = classification_report(y_test, y_pred, output_dict=True)
+            except:
+                # Si classification_report échoue (classes manquantes)
+                report = {
+                    'accuracy': accuracy,
+                    'macro avg': {'precision': 0.0, 'recall': 0.0, 'f1-score': 0.0},
+                    'weighted avg': {'precision': accuracy, 'recall': accuracy, 'f1-score': accuracy}
+                }
+            
+            print(f"✅ Modèle entraîné avec succès - Précision: {accuracy:.3f}")
+            
+            return {
+                'model': model,
+                'feature_importance': feature_importance,
+                'classification_report': report,
+                'accuracy': accuracy,
+                'label_encoders': {'position': le_position},
+                'features_used': features,
+                'training_data_size': len(X_train),
+                'test_data_size': len(X_test)
+            }
+            
+        except Exception as e:
+            print(f"❌ Erreur dans predict_injury_risk: {e}")
+            import traceback
+            traceback.print_exc()
+            
+            return {
+                'error': f'Erreur lors de l\'entraînement: {str(e)}',
+                'model': None,
+                'accuracy': 0.0,
+                'feature_importance': pd.DataFrame(),
+                'classification_report': {}
+            }
     
     def generate_player_risk_profile(self, player_id: int):
         """Générer un profil de risque pour un joueur spécifique"""

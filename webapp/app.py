@@ -3,6 +3,7 @@ Application Web Streamlit pour l'analyse des blessures de joueurs
 """
 import streamlit as st
 import pandas as pd
+import numpy as np
 import plotly.express as px
 import plotly.graph_objects as go
 from datetime import datetime, timedelta
@@ -13,6 +14,7 @@ import os
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 from src.analyzer import InjuryAnalyzer
+from src.ml_predictor import InjuryPredictor
 from src.data_collector import DataCollector
 from database.models import get_cassandra_session
 from database.crud import PlayerCRUD, InjuryCRUD
@@ -290,6 +292,16 @@ def show_ml_predictions(analyzer):
     with st.spinner("Entraînement du modèle de prédiction..."):
         ml_results = analyzer.predict_injury_risk()
     
+    # Vérifier s'il y a une erreur
+    if 'error' in ml_results:
+        st.error(f"❌ Erreur ML: {ml_results['error']}")
+        st.info("💡 Vérifiez que les données contiennent suffisamment d'informations pour l'entraînement")
+        
+        if 'available_data' in ml_results:
+            st.warning(f"Données disponibles: {ml_results['available_data']} échantillons (minimum: 10)")
+        
+        return
+    
     # Métriques du modèle
     col1, col2, col3 = st.columns(3)
     
@@ -301,42 +313,60 @@ def show_ml_predictions(analyzer):
         )
     
     with col2:
+        f1_score = ml_results['classification_report'].get('weighted avg', {}).get('f1-score', 0.0)
         st.metric(
             label="📊 F1-Score",
-            value=f"{ml_results['classification_report']['weighted avg']['f1-score']:.3f}",
+            value=f"{f1_score:.3f}",
             delta="Score pondéré"
         )
     
     with col3:
+        recall_score = ml_results['classification_report'].get('weighted avg', {}).get('recall', 0.0)
         st.metric(
             label="🔍 Rappel",
-            value=f"{ml_results['classification_report']['weighted avg']['recall']:.3f}",
+            value=f"{recall_score:.3f}",
             delta="Score de rappel"
         )
+    
+    # Informations sur les données d'entraînement
+    st.info(f"📊 Modèle entraîné sur {ml_results.get('training_data_size', 0)} échantillons, "
+            f"testé sur {ml_results.get('test_data_size', 0)} échantillons")
     
     # Importance des features
     st.subheader("📊 Importance des facteurs prédictifs")
     
     feature_importance = ml_results['feature_importance']
-    fig_importance = px.bar(
-        feature_importance,
-        x='importance',
-        y='feature',
-        orientation='h',
-        title="Facteurs les plus importants pour prédire les blessures graves",
-        color='importance',
-        color_continuous_scale='Viridis'
-    )
-    st.plotly_chart(fig_importance, use_container_width=True)
+    if not feature_importance.empty:
+        fig_importance = px.bar(
+            feature_importance,
+            x='importance',
+            y='feature',
+            orientation='h',
+            title="Facteurs les plus importants pour prédire les blessures graves",
+            color='importance',
+            color_continuous_scale='Viridis'
+        )
+        st.plotly_chart(fig_importance, use_container_width=True)
+    else:
+        st.warning("Aucune donnée d'importance des features disponible")
     
     # Simulateur de risque
     st.subheader("🎮 Simulateur de risque de blessure")
+    
+    # Vérifier si le modèle existe et fonctionne
+    if ml_results.get('model') is None:
+        st.error("❌ Modèle non disponible pour les prédictions")
+        return
     
     col1, col2 = st.columns(2)
     
     with col1:
         age_input = st.slider("Âge du joueur", 16, 40, 25)
-        height_input = st.slider("Taille (cm)", 150, 210, 180)
+        # Adapter selon les features disponibles
+        if 'height_normalized' in ml_results.get('features_used', []):
+            height_input = st.slider("Taille (cm)", 150, 210, 180)
+        else:
+            height_input = None
     
     with col2:
         position_options = analyzer.merged_df['main_position'].dropna().unique()
@@ -344,26 +374,51 @@ def show_ml_predictions(analyzer):
         month_input = st.selectbox("Mois", list(range(1, 13)), index=0)
     
     if st.button("🔮 Prédire le risque"):
-        # Encoder la position
         try:
+            # Encoder la position
             position_encoded = ml_results['label_encoders']['position'].transform([position_input])[0]
             
+            # Préparer les features selon le modèle
+            features_used = ml_results.get('features_used', [])
+            feature_values = []
+            
+            # Construire le vecteur de features dans l'ordre correct
+            for feature in features_used:
+                if feature == 'age':
+                    feature_values.append(age_input)
+                elif feature == 'position_encoded':
+                    feature_values.append(position_encoded)
+                elif feature == 'injury_month':
+                    feature_values.append(month_input)
+                elif feature == 'height_normalized' and height_input:
+                    feature_values.append(height_input)
+                else:
+                    feature_values.append(0)  # Valeur par défaut
+            
             # Faire la prédiction
-            features = [[age_input, height_input, position_encoded, month_input]]
-            risk_proba = ml_results['model'].predict_proba(features)[0]
+            prediction_input = [feature_values]
+            risk_proba = ml_results['model'].predict_proba(prediction_input)[0]
             
             # Afficher le résultat
-            risk_percentage = risk_proba[1] * 100
-            
-            if risk_percentage > 70:
-                st.error(f"🚨 Risque élevé: {risk_percentage:.1f}% de chance de blessure grave")
-            elif risk_percentage > 40:
-                st.warning(f"⚠️ Risque modéré: {risk_percentage:.1f}% de chance de blessure grave")
+            if len(risk_proba) > 1:
+                risk_percentage = risk_proba[1] * 100
+                
+                if risk_percentage > 70:
+                    st.error(f"🚨 Risque élevé: {risk_percentage:.1f}% de chance de blessure grave")
+                elif risk_percentage > 40:
+                    st.warning(f"⚠️ Risque modéré: {risk_percentage:.1f}% de chance de blessure grave")
+                else:
+                    st.success(f"✅ Risque faible: {risk_percentage:.1f}% de chance de blessure grave")
+                
+                # Afficher les détails
+                st.info(f"🔍 Détails: Probabilité sûr={risk_proba[0]*100:.1f}%, "
+                       f"Probabilité blessure grave={risk_proba[1]*100:.1f}%")
             else:
-                st.success(f"✅ Risque faible: {risk_percentage:.1f}% de chance de blessure grave")
+                st.warning("⚠️ Prédiction non disponible - modèle mal entraîné")
                 
         except Exception as e:
-            st.error(f"Erreur lors de la prédiction: {e}")
+            st.error(f"❌ Erreur lors de la prédiction: {e}")
+            st.info("💡 Vérifiez que le modèle est correctement entraîné et que les données sont valides")
 
 def show_player_profile(analyzer):
     """Afficher le profil d'un joueur"""
